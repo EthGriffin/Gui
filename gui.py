@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import ttk
 import math as math
 
 root = tk.Tk()
@@ -127,7 +126,9 @@ rolls = 0
 def my_callback(var, index, mode):
     print (f"Traced variable {wallpaper_value.get()}")
     if wallpaper_value.get() != "":
-        rolls = math.ceil(int(wallpaper_value.get())//10.05)
+        rolls = int(float(wallpaper_value.get())//10.05)
+        if float(wallpaper_value.get())%10.05 != 0:
+            rolls += 1
         value_sign.config(text=rolls)
 
 wallpaper_value.trace_add('write', my_callback)
@@ -136,22 +137,18 @@ length = tk.Entry(lengthInputFrame, textvariable=wallpaper_value)
 length.grid(sticky="W", row=0, column=1, pady=(20))
 
 def callback(input):
-    if len(input) > 5:
-        print(input)
-        print("hello")
-        return False
-
-    elif input.isdigit():
-        print(input)
-        return True
-                          
-    elif input == "":
+    if input == "":
         print(input)
         return True
 
     else:
-        print(input)
-        return False
+        try: 
+            float(input)
+            print(input)
+            return True
+        except ValueError:
+            print(input)
+            return False
 
 reg = lengthInputFrame.register(callback)
 
