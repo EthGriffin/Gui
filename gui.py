@@ -17,6 +17,8 @@ order = {
     "Added": {"LP": None, "WG": None}
 }
 
+total_price = tk.StringVar()
+
 def order_selection(option_type, selection):
         # Check if button is already selected
     if order[option_type] == selection:
@@ -78,6 +80,7 @@ def order_selection(option_type, selection):
 
 
     print(order)
+    total_price.set(str(Pricing()))
 
 def reset_button_color(option_type, selection="Nothing"):
 
@@ -242,7 +245,7 @@ preview_frame.grid(row=0, column=1, padx=(5,10), pady=10)
 
 # Canvas
 canvas = tk.Canvas(preview_frame, width=300, height=300, bg="white")
-canvas.grid(row=0, column=0, padx=20, pady=20)
+canvas.grid(row=1, column=0, padx=20, pady=20)
 
 def create_wallpaper1(colour):
     canvas.delete('all')
@@ -274,26 +277,27 @@ def create_wallpaper2(colour):
 
 # Pricing
 
-complete_frame = tk.Frame(preview_frame)
-complete_frame.grid(row=1, column=0, padx=20, pady=20)
-
-price = tk.Label(complete_frame, text="Price:", font=('Arial', 12))
-price.grid(row=0, column=0, padx=10, pady=10)
-
 basket = []
 basket_total = []
 def add_to_basket():
-    # Check if order is complete
-    if order["Rolls"] == 0 or order["Colour"] == None or order["Paper"] == None or order["Extras"] == None:
-        print("no way Josue")
+
+    # add order to basket
+    basket.append(order)
+    order_price = Pricing()
+    if order_price is False:
+        print("Uh uh, not a chance")
     else:
-        # add order to basket
-        basket.append(order)
-        order_price = Pricing()
         basket_total.append(order_price)
         print(basket, basket_total)
 
 def Pricing():
+    
+    # Check if order is complete
+    if order["Rolls"] == 0 or order["Colour"] is None or order["Paper"] is None or order["Extras"] is None:
+        print("no way Josue")
+        return False
+        
+        
     rolls = order["Rolls"]
     area = rolls * 5.226 # Amount of Rolls * 5.226m2 per roll
 
@@ -321,24 +325,32 @@ def Pricing():
         lining_paper_price = lining_paper_rolls * 7.63
     else: lining_paper_price = 0
     
-    total_price = 0
     order_price = wallpaper_price + extras_price + glue_price + lining_paper_price
     print(wallpaper_price, extras_price, glue_price, lining_paper_price)
-    total_price += order_price
-    return total_price
+    return order_price
 
 
 
 # Completion
 
-cart_button = tk.Button(complete_frame, text="Cart")
-cart_button.grid(sticky="W", row=0)
+cart_frame = tk.Frame(preview_frame)
+cart_frame.grid(row=0, column=0, padx=(5,10), pady=10)
+cart_button = tk.Button(cart_frame, text="Cart") # TODO: add cart functionality
+cart_button.grid(sticky="E", row=0, column=0, padx=10, pady=10)
+total_price_in_cart = tk.Label(cart_frame, textvariable=total_price) # TODO: update with total price of everything in cart
+total_price_in_cart.grid(sticky="E", row=0, column=1, padx=10, pady=10)
 
-total_price_in_cart = tk.Label(complete_frame, text=total_price)
-total_price_in_cart.grid(row=3, column=0, padx=10, pady=10)
+price_frame = tk.Frame(preview_frame)
+price_frame.grid(row=2, column=0, padx=(5,10), pady=10)
+price_text = tk.Label(price_frame, text="Price:", font=('Arial', 12))
+price_text.grid(row=0, column=0, padx=10, pady=10)
+price = tk.Label(price_frame, text="£Temp", font=('Arial', 12)) # TODO: update with price of current order
+price.grid(row=0, column=1, padx=10, pady=10)
 
-Add_to_basket_button = tk.Button(complete_frame, text="Add to Basket", font=('Arial', 12), command=add_to_basket)
-Add_to_basket_button.grid(row=1, column=0, padx=10, pady=10)
+basket_button_frame = tk.Frame(preview_frame)
+basket_button_frame.grid(row=3, column=0, padx=(5,10), pady=10)
+Add_to_basket_button = tk.Button(basket_button_frame, text="Add to Basket", font=('Arial', 12), command=add_to_basket)
+Add_to_basket_button.grid(row=0, column=0, padx=10, pady=10)
 
 
 
