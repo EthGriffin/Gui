@@ -12,7 +12,6 @@ frame.pack()
 order = {
     "Rolls": 0,
     "Paper": None,
-    "Pattern": None,
     "Colour": None,
     "Extras": None,
     "Added": {"LP": None, "WG": None}
@@ -26,7 +25,6 @@ def order_selection(option_type, selection):
         reset_button_color(option_type)
     elif option_type == "Added" and order[option_type]["LP"] == selection:
         order[option_type]["LP"] = None
-        print("yoyoyoyo")
         reset_button_color(option_type, selection)
     elif option_type == "Added" and order[option_type]["WG"] == selection:
         order[option_type]["WG"] = None
@@ -45,21 +43,17 @@ def order_selection(option_type, selection):
         reset_button_color(option_type)
 
         # Turn on selected button color
-        if order[option_type] == "cheap":
+        if order[option_type] == "Cheap":
             paper_button1.configure(bg="gray74")
-        if order[option_type] == "expensive":
+        if order[option_type] == "Expensive":
             paper_button2.configure(bg="gray74")
-        if order[option_type] == "Pattern 1":
-            pattern_button1.configure(bg="gray74")
-        if order[option_type] == "Pattern 2":
-            pattern_button2.configure(bg="gray74")
         if order[option_type] == "Foil":
             extras_button1.configure(bg="gray74")
         if order[option_type] == "Glitter":
             extras_button2.configure(bg="gray74")
         if order[option_type] == "Embossing":
             extras_button3.configure(bg="gray74")
-        if order[option_type] == "None":
+        if order[option_type] == "No extras":
             extras_button4.configure(bg="gray74")
         if option_type == "Added":
             if order[option_type]["LP"] == "Lining paper":
@@ -68,18 +62,18 @@ def order_selection(option_type, selection):
                 addon_button2.configure(bg="gray74")
     
     # changes wallpaper design and colour dependent on option for pattern
-    if order["Pattern"] == None:
+    if order["Paper"] == None:
         canvas.delete('all')
-    elif order["Pattern"] == "Pattern 1":
+    elif order["Paper"] == "Cheap":
         create_wallpaper1("purple")
-    elif order["Pattern"] == "Pattern 2":
+    elif order["Paper"] == "Expensive":
         create_wallpaper2("purple")
-    if order["Colour"] in dropdownValues and order["Pattern"] != None:
+    if order["Colour"] in dropdownValues and order["Paper"] != None:
         colour = colourChoice.get()
         
-        if order["Pattern"] == "Pattern 1":
+        if order["Paper"] == "Cheap":
             create_wallpaper1(colour)
-        elif order["Pattern"] == "Pattern 2":
+        elif order["Paper"] == "Expensive":
             create_wallpaper2(colour)
 
 
@@ -91,9 +85,6 @@ def reset_button_color(option_type, selection="Nothing"):
     if option_type == "Paper":
         paper_button1.configure(bg="grey94")
         paper_button2.configure(bg="grey94")
-    elif option_type == "Pattern":
-        pattern_button1.configure(bg="grey94")
-        pattern_button2.configure(bg="grey94")
     elif option_type == "Extras":
         extras_button1.configure(bg="grey94")
         extras_button2.configure(bg="grey94")
@@ -121,8 +112,6 @@ label.grid(sticky="W", row=0, column=0, padx=10, pady=(20))
 
 wallpaper_value = tk.StringVar()
 
-rolls = 0
-
 def my_callback(var, index, mode):
     print (f"Traced variable {wallpaper_value.get()}")
     if wallpaper_value.get() != "":
@@ -130,6 +119,10 @@ def my_callback(var, index, mode):
         if float(wallpaper_value.get())%10.05 != 0:
             rolls += 1
         value_sign.config(text=rolls)
+    
+    order["Rolls"] = rolls
+    print(order)
+
 
 wallpaper_value.trace_add('write', my_callback)
 
@@ -176,26 +169,11 @@ paperInputFrame.grid(row=1, column=0)
 label = tk.Label(paperInputFrame, text="Paper:", font=('Arial', 12))
 label.grid(sticky="W", row=0, column=0)
 
-paper_button1 = tk.Button(paperInputFrame, font=('Arial', 12), text="Cheap", command= lambda: order_selection("Paper", "cheap"), bg="grey94")
+paper_button1 = tk.Button(paperInputFrame, font=('Arial', 12), text="Cheap", command= lambda: order_selection("Paper", "Cheap"), bg="grey94")
 paper_button1.grid(sticky="W", row=0, column=1, padx=10, pady=20)
 
-paper_button2 = tk.Button(paperInputFrame, text="Expensive", font=('Arial', 12), command= lambda: order_selection("Paper", "expensive"), bg="grey94")
+paper_button2 = tk.Button(paperInputFrame, text="Expensive", font=('Arial', 12), command= lambda: order_selection("Paper", "Expensive"), bg="grey94")
 paper_button2.grid(sticky="W", row=0, column=2, padx=10, pady=20)
-
-
-# Pattern choice
-
-patternInputFrame = tk.Frame(order_frame)
-patternInputFrame.grid(row=2, column=0)
-
-label = tk.Label(patternInputFrame, text="Pattern:", font=('Arial', 12))
-label.grid(sticky="W", row=0, column=0)
-
-pattern_button1 = tk.Button(patternInputFrame, text="Pattern 1", font=('Arial', 12), command= lambda: order_selection("Pattern", "Pattern 1"), bg="grey94")
-pattern_button1.grid(sticky="W", row=0, column=1, padx=10, pady=20)
-
-pattern_button2 = tk.Button(patternInputFrame, text="Pattern 2", font=('Arial', 12), command= lambda: order_selection("Pattern", "Pattern 2"), bg="grey94")
-pattern_button2.grid(sticky="W", row=0, column=2, padx=10, pady=20)
 
 
 # Colour choice
@@ -233,7 +211,7 @@ extras_button2.grid(sticky="W", row=0, column=2, padx=10, pady=20)
 extras_button3 = tk.Button(extraInputFrame, text="Embossing", font=('Arial', 12), command= lambda: order_selection("Extras", "Embossing"), bg="grey94")
 extras_button3.grid(sticky="W", row=0, column=3, padx=10, pady=20)
 
-extras_button4 = tk.Button(extraInputFrame, text="None", font=('Arial', 12), command= lambda: order_selection("Extras", "None"), bg="grey94")
+extras_button4 = tk.Button(extraInputFrame, text="None", font=('Arial', 12), command= lambda: order_selection("Extras", "No extras"), bg="grey94")
 extras_button4.grid(sticky="W", row=0, column=4, padx=10, pady=20)
 
 # Add ons
@@ -302,16 +280,62 @@ complete_frame.grid(row=1, column=0, padx=20, pady=20)
 price = tk.Label(complete_frame, text="Price:", font=('Arial', 12))
 price.grid(row=0, column=0, padx=10, pady=10)
 
+basket = []
+basket_total = []
 def add_to_basket():
-    for selections in [order["Colour"], order["Pattern"], order["Paper"]]:
-        if selections == None:
-            print("no way Josue")
-# def Pricing():
- 
+    # Check if order is complete
+    if order["Rolls"] == 0 or order["Colour"] == None or order["Paper"] == None or order["Extras"] == None:
+        print("no way Josue")
+    else:
+        # add order to basket
+        basket.append(order)
+        order_price = Pricing()
+        basket_total.append(order_price)
+        print(basket, basket_total)
+
+def Pricing():
+    rolls = order["Rolls"]
+    area = rolls * 5.226 # Amount of Rolls * 5.226m2 per roll
+
+    # wallpaper price for Cheap or Expensive
+    if order["Paper"] == "Cheap":
+        wallpaper_price = area * 30 # area * £30 per m2
+    elif order["Paper"] == "Expensive":
+        wallpaper_price = area * 60 # area * £60 per m2
+    
+    extras_price_dict = {"Foil": 12, "Glitter": 18, "Embossing": 6, "No extras": 0}
+    extras_price = rolls * 10.05 * int(extras_price_dict[order["Extras"]])
+    print(order["Extras"], extras_price_dict[order["Extras"]], extras_price)
+
+    if order["Added"]["WG"] == "Wallpaper glue":
+        tub_quantity = int((rolls*5.226)//53)
+        if (rolls*5.226)%53 != 0:
+            tub_quantity += 1
+        glue_price = tub_quantity * 13.99
+    else: glue_price = 0
+
+    if order["Added"]["LP"] == "Lining paper":
+        lining_paper_rolls = int((rolls*10.05)//20)
+        if (rolls*5.226)%53 != 0:
+            lining_paper_rolls += 1
+        lining_paper_price = lining_paper_rolls * 7.63
+    else: lining_paper_price = 0
+    
+    total_price = 0
+    order_price = wallpaper_price + extras_price + glue_price + lining_paper_price
+    print(wallpaper_price, extras_price, glue_price, lining_paper_price)
+    total_price += order_price
+    return total_price
+
+
 
 # Completion
 
+cart_button = tk.Button(complete_frame, text="Cart")
+cart_button.grid(sticky="W", row=0)
 
+total_price_in_cart = tk.Label(complete_frame, text=total_price)
+total_price_in_cart.grid(row=3, column=0, padx=10, pady=10)
 
 Add_to_basket_button = tk.Button(complete_frame, text="Add to Basket", font=('Arial', 12), command=add_to_basket)
 Add_to_basket_button.grid(row=1, column=0, padx=10, pady=10)
