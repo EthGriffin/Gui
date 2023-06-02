@@ -18,6 +18,7 @@ order = {
 }
 
 total_price = tk.StringVar()
+total_price.set(0)
 
 def order_selection(option_type, selection):
         # Check if button is already selected
@@ -46,22 +47,22 @@ def order_selection(option_type, selection):
 
         # Turn on selected button color
         if order[option_type] == "Cheap":
-            paper_button1.configure(bg="gray74")
+            paper_button1.configure(bg="light sky blue")
         if order[option_type] == "Expensive":
-            paper_button2.configure(bg="gray74")
+            paper_button2.configure(bg="light sky blue")
         if order[option_type] == "Foil":
-            extras_button1.configure(bg="gray74")
+            extras_button1.configure(bg="light sky blue")
         if order[option_type] == "Glitter":
-            extras_button2.configure(bg="gray74")
+            extras_button2.configure(bg="light sky blue")
         if order[option_type] == "Embossing":
-            extras_button3.configure(bg="gray74")
+            extras_button3.configure(bg="light sky blue")
         if order[option_type] == "No extras":
-            extras_button4.configure(bg="gray74")
+            extras_button4.configure(bg="light sky blue")
         if option_type == "Added":
             if order[option_type]["LP"] == "Lining paper":
-                addon_button1.configure(bg="gray74")
+                addon_button1.configure(bg="light sky blue")
             if order[option_type]["WG"] == "Wallpaper glue":
-                addon_button2.configure(bg="gray74")
+                addon_button2.configure(bg="light sky blue")
     
     # changes wallpaper design and colour dependent on option for pattern
     if order["Paper"] == None:
@@ -189,11 +190,11 @@ label.grid(sticky="W", row=0, column=0, padx=10, pady=20)
 
 colourChoice = tk.StringVar(colourInputFrame)
 
-dropdownValues = ["Purple", "DarkSlateGray4", "Deep sky blue" ,"Light sea green", "VioletRed2", "Gold"]
+dropdownValues = ["Purple", "DarkSlateGray4", "light sky blue" ,"Light sea green", "VioletRed2", "Gold"]
 
-def callback(selection):
+def callback_colour(selection):
     order_selection("Colour", selection)
-dropdown = tk.OptionMenu(colourInputFrame, colourChoice, *dropdownValues, command= callback)
+dropdown = tk.OptionMenu(colourInputFrame, colourChoice, *dropdownValues, command= callback_colour)
 dropdown.config(bg="grey94", activebackground="grey74")
 dropdown.grid(sticky="W", row=0, column=1)
 
@@ -282,7 +283,8 @@ basket_total = []
 def add_to_basket():
 
     # add order to basket
-    basket.append(order)
+    order_screenshot = str(order)
+    basket.append(order_screenshot)
     order_price = Pricing()
     if order_price is False:
         print("Uh uh, not a chance")
@@ -307,45 +309,63 @@ def Pricing():
     elif order["Paper"] == "Expensive":
         wallpaper_price = area * 60 # area * £60 per m2
     
-    extras_price_dict = {"Foil": 12, "Glitter": 18, "Embossing": 6, "No extras": 0}
-    extras_price = rolls * 10.05 * int(extras_price_dict[order["Extras"]])
-    print(order["Extras"], extras_price_dict[order["Extras"]], extras_price)
-
-    if order["Added"]["WG"] == "Wallpaper glue":
-        tub_quantity = int((rolls*5.226)//53)
-        if (rolls*5.226)%53 != 0:
-            tub_quantity += 1
-        glue_price = tub_quantity * 13.99
-    else: glue_price = 0
+    extras_price_dict = {"Foil": 0.12, "Glitter": 0.18, "Embossing": 0.06, "No extras": 0}
+    extras_price = rolls * 10.05 * extras_price_dict[order["Extras"]]
+    print(order["Extras"], rolls, extras_price_dict[order["Extras"]], extras_price)
 
     if order["Added"]["LP"] == "Lining paper":
-        lining_paper_rolls = int((rolls*10.05)//20)
-        if (rolls*5.226)%53 != 0:
+        lining_paper_rolls = int(wallpaper_value.get())//20
+        if int(wallpaper_value.get())%20 != 0:
             lining_paper_rolls += 1
         lining_paper_price = lining_paper_rolls * 7.63
     else: lining_paper_price = 0
     
-    order_price = wallpaper_price + extras_price + glue_price + lining_paper_price
+    if order["Added"]["WG"] == "Wallpaper glue":
+        if order["Added"]["LP"] == "Lining paper":
+            tub_quantity = ((rolls*5.226) + lining_paper_rolls * 10.4) // 53
+            if ((rolls*5.226) + lining_paper_rolls * 10.4)%53 != 0:
+                tub_quantity += 1
+        else:
+            tub_quantity = int((rolls*5.226)//53)
+            if (rolls*5.226)%53 != 0:
+                tub_quantity += 1
+        glue_price = tub_quantity * 13.99
+    else: glue_price = 0
+
+
+    
+    order_price = wallpaper_price + extras_price + glue_price + lining_paper_price # TODO: round this to 2 d.p.
     print(wallpaper_price, extras_price, glue_price, lining_paper_price)
-    return order_price
+    return round(order_price, 2)
 
 
 
 # Completion
 
+def cart():
+    window = tk.Toplevel(root)
+    window.title("Cart")
+    i = 0
+    for item in basket:
+        i += 1
+        order_text = tk.Label(window, text=f"Order {i}:     {basket[i-1]}, Price: £{basket_total[i-1]}")
+        order_text.pack()
+        
+    
 cart_frame = tk.Frame(preview_frame)
 cart_frame.grid(row=0, column=0, padx=(5,10), pady=10)
-cart_button = tk.Button(cart_frame, text="Cart") # TODO: add cart functionality
+cart_button = tk.Button(cart_frame, text="Cart", command=cart) # TODO: add cart functionality
 cart_button.grid(sticky="E", row=0, column=0, padx=10, pady=10)
 total_price_in_cart = tk.Label(cart_frame, textvariable=total_price) # TODO: update with total price of everything in cart
 total_price_in_cart.grid(sticky="E", row=0, column=1, padx=10, pady=10)
 
+
 price_frame = tk.Frame(preview_frame)
 price_frame.grid(row=2, column=0, padx=(5,10), pady=10)
-price_text = tk.Label(price_frame, text="Price:", font=('Arial', 12))
-price_text.grid(row=0, column=0, padx=10, pady=10)
-price = tk.Label(price_frame, text="£Temp", font=('Arial', 12)) # TODO: update with price of current order
-price.grid(row=0, column=1, padx=10, pady=10)
+price_text = tk.Label(price_frame, text="Price:     £", font=('Arial', 12))
+price_text.grid(row=0, column=0, padx=(10,0), pady=10)
+price = tk.Label(price_frame, textvariable=total_price, font=('Arial', 12)) # TODO: update with price of current order
+price.grid(row=0, column=1, pady=10)
 
 basket_button_frame = tk.Frame(preview_frame)
 basket_button_frame.grid(row=3, column=0, padx=(5,10), pady=10)
