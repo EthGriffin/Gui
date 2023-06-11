@@ -19,6 +19,8 @@ order = {
 
 total_price = tk.StringVar()
 total_price.set(0)
+cart_total = tk.StringVar()
+cart_total.set(0)
 
 def order_selection(option_type, selection):
         # Check if button is already selected
@@ -195,7 +197,7 @@ dropdownValues = ["Purple", "DarkSlateGray4", "light sky blue" ,"Light sea green
 def callback_colour(selection):
     order_selection("Colour", selection)
 dropdown = tk.OptionMenu(colourInputFrame, colourChoice, *dropdownValues, command= callback_colour)
-dropdown.config(bg="grey94", activebackground="grey74")
+dropdown.config(bg="grey94", activebackground="Light sky blue")
 dropdown.grid(sticky="W", row=0, column=1)
 
 # Extras
@@ -278,6 +280,26 @@ def create_wallpaper2(colour):
 
 # Pricing
 
+def reset_order():
+    order["Rolls"] = 0
+    order["Paper"] = None
+    order["Colour"] = None
+    order["Extras"] = None
+    order["Added"]["LP"] = None
+    order["Added"]["WG"] = None
+    wallpaper_value.set(0)
+    wallpaper_value.set("")
+    colourChoice.set("")
+    total_price.set(0)
+    canvas.delete('all')
+    for option in order:
+        if option == "Added":
+            print("hello added is working")
+            reset_button_color(option, "Lining paper")
+            reset_button_color(option, "Wallpaper glue")
+        else:
+            reset_button_color(option)
+            
 basket = []
 basket_total = []
 def add_to_basket():
@@ -291,6 +313,14 @@ def add_to_basket():
     else:
         basket_total.append(order_price)
         print(basket, basket_total)
+        cart_total.set(sum(basket_total))
+        reset_order()
+    # TODO: need to clear the wallpaper length input as well and rolls
+
+
+        
+        
+    
 
 def Pricing():
     
@@ -314,8 +344,8 @@ def Pricing():
     print(order["Extras"], rolls, extras_price_dict[order["Extras"]], extras_price)
 
     if order["Added"]["LP"] == "Lining paper":
-        lining_paper_rolls = int(wallpaper_value.get())//20
-        if int(wallpaper_value.get())%20 != 0:
+        lining_paper_rolls = float(wallpaper_value.get())//20
+        if float(wallpaper_value.get())%20 != 0:
             lining_paper_rolls += 1
         lining_paper_price = lining_paper_rolls * 7.63
     else: lining_paper_price = 0
@@ -345,18 +375,40 @@ def Pricing():
 def cart():
     window = tk.Toplevel(root)
     window.title("Cart")
-    i = 0
-    for item in basket:
-        i += 1
-        order_text = tk.Label(window, text=f"Order {i}:     {basket[i-1]}, Price: £{basket_total[i-1]}")
-        order_text.pack()
+    
+    order_labels = []
+    # order_labels = {}
+    # orders_to_delete = []
+      
+    def delete_order(index):
+        order_labels[index].destroy()
+        del order_labels[index]
+        del basket_total[index]
+        cart_total.set(round(sum(basket_total), 2))
+        del basket[index]
+        window.destroy()
+        cart()
+        reciept()
+        
+        
+    for i, item in enumerate(basket):
+        order_label = tk.Label(window, text=f"Order {i+1}:     {item}, Price: £{basket_total[i]}")
+        order_label.grid(row=i, column=0, padx=10, pady=10)
+        order_labels.append(order_label)
+
+        cancel_this_order = tk.Button(window, text="Delete", command=lambda index=i: delete_order(index))
+        cancel_this_order.grid(row=i, column=1, padx=10, pady=10)
+
+
+        
+        
         
     
 cart_frame = tk.Frame(preview_frame)
 cart_frame.grid(row=0, column=0, padx=(5,10), pady=10)
-cart_button = tk.Button(cart_frame, text="Cart", command=cart) # TODO: add cart functionality
+cart_button = tk.Button(cart_frame, text="Cart", command=cart)
 cart_button.grid(sticky="E", row=0, column=0, padx=10, pady=10)
-total_price_in_cart = tk.Label(cart_frame, textvariable=total_price) # TODO: update with total price of everything in cart
+total_price_in_cart = tk.Label(cart_frame, textvariable=cart_total) # TODO: update with total price of everything in cart
 total_price_in_cart.grid(sticky="E", row=0, column=1, padx=10, pady=10)
 
 
@@ -364,7 +416,7 @@ price_frame = tk.Frame(preview_frame)
 price_frame.grid(row=2, column=0, padx=(5,10), pady=10)
 price_text = tk.Label(price_frame, text="Price:     £", font=('Arial', 12))
 price_text.grid(row=0, column=0, padx=(10,0), pady=10)
-price = tk.Label(price_frame, textvariable=total_price, font=('Arial', 12)) # TODO: update with price of current order
+price = tk.Label(price_frame, textvariable=total_price, font=('Arial', 12))
 price.grid(row=0, column=1, pady=10)
 
 basket_button_frame = tk.Frame(preview_frame)
@@ -374,7 +426,22 @@ Add_to_basket_button.grid(row=0, column=0, padx=10, pady=10)
 
 
 
+# print order to a txt file
 
-
-
+def reciept():
+    
+    order_json = []
+    
+    for i, order in enumerate(basket):
+        order_data = {
+            'order_number' : i+1,
+            'order' : order,
+            'price' : basket_total[i]
+        }
+        order_json.append(order_data)
+    
+    order_json.append({'total_price' : sum(basket_total)})
+    f = open("Receipt.txt", "w")
+    f.write(str(order_json))
+tk.Button(basket_button_frame, text="Complete", command=reciept).grid(row=1, column=0, padx=10, pady=10)
 root.mainloop()
